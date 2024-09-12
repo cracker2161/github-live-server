@@ -6,6 +6,8 @@
     <title>CS — TV</title>
     <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
     <style>
+        /* আপনার পূর্বের CSS কোড থাকবে */
+
         body {
             margin: 0;
             font-family: 'Roboto', sans-serif;
@@ -125,9 +127,12 @@
             font-size: 18px;
             text-align: center;
         }
+
+
+
     </style>
 </head>
-<body>
+<body oncontextmenu="return false" onkeydown="return disableCtrlKeyCombination(event);">
 
 <div id="container">
     <div id="video-section">
@@ -155,8 +160,40 @@
     <button class="floating-button" onclick="window.location.href='https://yourwebsite.com'">Visit our apps store</button>
 </div>
 
+
 <script>
-  const video = document.getElementById('video');
+    // রাইট ক্লিক নিষ্ক্রিয়
+    document.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+    });
+
+    // Ctrl + U, Ctrl + Shift + I, Ctrl + Shift + J, F12 এবং অন্যান্য কীবোর্ড শর্টকাট নিষ্ক্রিয় করা
+    function disableCtrlKeyCombination(e) {
+        var forbiddenKeys = ['u', 'i', 'j', 's', 'c'];
+
+        if (e.ctrlKey || e.metaKey) {
+            var key = String.fromCharCode(e.keyCode).toLowerCase();
+            if (forbiddenKeys.includes(key)) {
+                e.preventDefault();
+                alert("This action is disabled!");
+                return false;
+            }
+        }
+
+        // F12 নিষ্ক্রিয় করা
+        if (e.keyCode == 123) {
+            e.preventDefault();
+            alert("Developer tools are disabled!");
+            return false;
+        }
+
+        return true;
+    }
+
+    // অন্য সকল জাভাস্ক্রিপ্ট ফাংশন এখানে থাকবে
+
+     
+const video = document.getElementById('video');
   const videoSource = document.getElementById('video-source');
   const errorMessage = document.getElementById('error-message');
   const categorySelect = document.getElementById('category-select');
@@ -165,7 +202,7 @@
   const m3uUrls = {
     bangladesh: "https://raw.githubusercontent.com/sultanarabi161/bd-playlist/main/all-category.m3u",
     islamic: "https://raw.githubusercontent.com/sultanarabi161/Youtube-playlist/main/bd.m3u",
-    news: "https://raw.githubusercontent.com/sultanarabi161/bd-playlist/main/all-category.m3u",
+    news: "http://surl.li/lzdkiy",
     sports: "https://example.com/sports.m3u",
     kids: "https://raw.githubusercontent.com/sultanarabi161/New-playlist-demo/main/demo.m3u"
   };
