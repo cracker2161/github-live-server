@@ -1,0 +1,253 @@
+
+<!-- Add this to an HTML/JavaScript widget or in the Blogger theme -->
+
+<!-- CSS for styling -->
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+  }
+
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 10px;
+    position: relative;
+    z-index: 10; /* Ensure it is above other elements */
+  }
+
+  h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  .input-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    gap: 10px;
+  }
+
+  input[type="text"] {
+    width: 70%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+    background-color: #218838;
+  }
+
+  .search-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .channel-box {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 10; /* Ensure it is above other elements */
+  }
+
+  .channel-item {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+  }
+
+  .channel-item:hover {
+    background-color: #f1f1f1;
+  }
+
+  .channel-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 5px;
+    margin-right: 15px;
+    border: 1px solid #ccc;
+  }
+
+  .channel-item:last-child {
+    border-bottom: none;
+  }
+
+  .channel-item strong {
+    font-size: 18px;
+    color: #333;
+  }
+
+  video {
+    width: 100%;
+    height: auto;
+    margin-top: 20px;
+    background-color: black;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 10; /* Ensure it is above other elements */
+  }
+
+  @media (max-width: 768px) {
+    .channel-item {
+      padding: 8px;
+    }
+
+    .channel-logo {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    .channel-item strong {
+      font-size: 16px;
+    }
+
+    input[type="text"] {
+      width: 60%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .input-container {
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+    }
+
+    button {
+      width: 100%;
+    }
+
+    .channel-logo {
+      width: 35px;
+      height: 35px;
+    }
+
+    .channel-item strong {
+      font-size: 14px;
+    }
+  }
+</style>
+
+<!-- HTML Content -->
+<div class="container">
+  <h1>Channel Box with Player</h1>
+
+  <div class="input-container">
+    <input type="text" id="m3uUrl" value="https://raw.githubusercontent.com/sultanarabi161/bd-playlist/main/all-category.m3u" placeholder="Enter M3U playlist URL">
+    <button onclick="loadChannels()">Load Channels</button>
+  </div>
+
+  <!-- Search Box -->
+  <div class="search-container">
+    <input type="text" id="searchBox" onkeyup="searchChannels()" placeholder="Search channels...">
+  </div>
+
+  <div class="channel-box" id="channelBox">
+    <!-- Channels will be displayed here -->
+  </div>
+
+  <video id="videoPlayer" controls>
+    <!-- Video will be played here -->
+  </video>
+</div>
+
+<!-- JavaScript for functionality -->
+<script>
+  let channels = []; // Store channels for searching
+
+  function loadChannels() {
+    const m3uUrl = document.getElementById('m3uUrl').value;
+    fetch(m3uUrl)
+      .then(response => response.text())
+      .then(data => {
+        const channelBox = document.getElementById('channelBox');
+        channelBox.innerHTML = ''; // Clear previous channels
+        channels = []; // Clear previous channels array
+
+        const lines = data.split('\n');
+        let channelName = '';
+        let channelLogo = '';
+        
+        lines.forEach(line => {
+          if (line.startsWith('#EXTINF')) {
+            const info = line.split(',');
+            channelName = info[1].trim();
+            
+            const logoMatch = line.match(/tvg-logo="(.*?)"/);
+            if (logoMatch) {
+              channelLogo = logoMatch[1];
+            } else {
+              channelLogo = ''; 
+            }
+          }
+
+          if (line.startsWith('http') || line.startsWith('https')) { // Check if it's a valid link
+            const channelItem = document.createElement('div');
+            channelItem.classList.add('channel-item');
+            
+            const logoImg = channelLogo ? `<img src="${channelLogo}" alt="Logo" class="channel-logo">` : '';
+            channelItem.innerHTML = `${logoImg}<strong>${channelName}</strong>`;
+            
+            channelItem.addEventListener('click', function() {
+              const videoPlayer = document.getElementById('videoPlayer');
+              videoPlayer.src = line; // Set the channel link in the video player
+              videoPlayer.play(); // Automatically start playing the video
+            });
+            
+            channelBox.appendChild(channelItem);
+            channels.push({ name: channelName, element: channelItem }); // Store channel info for searching
+          }
+        });
+      })
+      .catch(error => {
+        console.error('Error fetching M3U file:', error);
+      });
+  }
+
+  function searchChannels() {
+    const searchValue = document.getElementById('searchBox').value.toLowerCase();
+    const channelBox = document.getElementById('channelBox');
+
+    // Clear previous displayed channels
+    channelBox.innerHTML = '';
+
+    // Filter and display channels based on search value
+    channels.forEach(channel => {
+      if (channel.name.toLowerCase().includes(searchValue)) {
+        channelBox.appendChild(channel.element);
+      }
+    });
+  }
+</script>
