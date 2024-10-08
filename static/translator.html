@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>English to Bangla Translator</title>
+
+  <style>
+    body {
+
+      font-family: Arial, sans-serif;
+
+      background-color: #f4f4f4;
+
+    }
+
+    .container {
+
+      max-width: 500px;
+
+      margin: 50px auto;
+
+      padding: 20px;
+
+      background-color: #fff;
+
+      border-radius: 10px;
+
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+    }
+
+    h2 {
+
+      color: #007bff;
+
+    }
+
+    textarea {
+
+      width: 100%;
+
+      height: 100px;
+
+      margin-bottom: 10px;
+
+      border: 1px solid #ccc;
+
+      border-radius: 5px;
+
+      padding: 10px;
+
+      font-size: 16px;
+
+    }
+
+    button {
+
+      padding: 10px 20px;
+
+      background-color: #007bff;
+
+      color: #fff;
+
+      border: none;
+
+      border-radius: 5px;
+
+      cursor: pointer;
+
+      font-size: 16px;
+
+    }
+
+    #translationResult {
+
+      margin-top: 20px;
+
+      font-size: 18px;
+
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h2>English to Bangla Translator</h2>
+
+    <textarea id="englishText" placeholder="Enter English text here..."></textarea><br>
+
+    <button onclick="translateToBangla()">Translate</button>
+
+    <div id="translationResult"></div>
+
+  </div>
+
+  <script>
+
+    function translateToBangla() {
+
+      var englishText = document.getElementById("englishText").value;
+
+      var xhr = new XMLHttpRequest();
+
+      xhr.open("GET", "https://api.mymemory.translated.net/get?q=" + encodeURI(englishText) + "&langpair=en|bn", true);
+
+      xhr.onreadystatechange = function () {
+
+        if (xhr.readyState == 4 && xhr.status == 200) {
+
+          var response = JSON.parse(xhr.responseText);
+
+          var banglaTranslation = response.responseData.translatedText;
+
+          document.getElementById("translationResult").innerHTML = banglaTranslation;
+
+        }
+
+      };
+
+      xhr.send();
+
+    }
+
+  </script>
+
+</body>
+
+</html>
