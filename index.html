@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Advanced Professional Notepad</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.0/mode/markdown/markdown.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/2.0.3/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.2.9/purify.min.js"></script>
+    <style>
+        body, html {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: #f0f0f0;
+        }
+        .container {
+            display: flex;
+            height: 100%;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+        }
+        .toolbar {
+            background-color: #34495e;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .toolbar button, .toolbar select {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            margin: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .toolbar button:hover, .toolbar select:hover {
+            background-color: #21618c;
+        }
+        .editor-container {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        #editor, #preview {
+            width: 50%;
+            height: 100%;
+            overflow-y: auto;
+        }
+        #preview {
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .CodeMirror {
+            height: 100% !important;
+        }
+        .status-bar {
+            background-color: #ecf0f1;
+            padding: 5px 15px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .note-list {
+            margin-top: 20px;
+        }
+        .note-item {
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid #34495e;
+        }
+        .note-item:hover {
+            background-color: #34495e;
+        }
+        #searchBox {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: none;
+            border-radius: 4px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <input type="text" id="searchBox" placeholder="Search notes...">
+            <button id="newNoteBtn">New Note</button>
+            <div class="note-list" id="notesList"></div>
+        </div>
+        <div class="main-content">
+            <div class="toolbar">
+                <button id="saveBtn"><i class="fas fa-save"></i> Save</button>
+                <button id="boldBtn"><i class="fas fa-bold"></i></button>
+                <button id="italicBtn"><i class="fas fa-italic"></i></button>
+                <button id="linkBtn"><i class="fas fa-link"></i></button>
+                <button id="imageBtn"><i class="fas fa-image"></i></button>
+                <button id="codeBtn"><i class="fas fa-code"></i></button>
+                <button id="listBtn"><i class="fas fa-list"></i></button>
+                <button id="quoteBtn"><i class="fas fa-quote-right"></i></button>
+                <button id="headingBtn"><i class="fas fa-heading"></i></button>
+                <button id="undoBtn"><i class="fas fa-undo"></i></button>
+                <button id="redoBtn"><i class="fas fa-redo"></i></button>
+                <button id="exportBtn"><i class="fas fa-file-export"></i></button>
+                <button id="printBtn"><i class="fas fa-print"></i></button>
+                <select id="themeSelector">
+                    <option value="default">Default Theme</option>
+                    <option value="dark">Dark Theme</option>
+                    <option value="solarized">Solarized Theme</option>
+                </select>
+            </div>
+            <div class="editor-container">
+                <textarea id="editor"></textarea>
+                <div id="preview"></div>
+            </div>
+            <div class="status-bar">
+                <span id="wordCount">Words: 0</span>
+                <span id="charCount">Characters: 0</span>
+                <span id="saveStatus">Unsaved changes</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="linkModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Insert Link</h2>
+            <input type="text" id="linkText" placeholder="Link text">
+            <input type="text" id="linkUrl" placeholder="URL">
+            <button id="insertLinkBtn">Insert</button>
+        </div>
+    </div>
+
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Insert Image</h2>
+            <input type="text" id="imageAlt" placeholder="Alt text">
+            <input type="text" id="imageUrl" placeholder="Image URL">
+            <button id="insertImageBtn">Insert</button>
+        </div>
+    </div>
+
+    <script>
+        let editor;
+        let currentNote = { id: null, title: '', content: '' };
+        const preview = document.getElementById('preview');
+        const saveBtn = document.getElementById('saveBtn');
+        const boldBtn = document.getElementById('boldBtn');
+        const italicBtn = document.getElementById('italicBtn');
+        const linkBtn = document.getElementById('linkBtn');
+        const imageBtn = document.getElementById('imageBtn');
+        const codeBtn = document.getElementById('codeBtn');
+        const listBtn = document.getElementById('listBtn');
+        const quoteBtn = document.getElementById('quoteBtn');
+        const headingBtn = document.getElementById('headingBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const printBtn = document.getElementById('printBtn');
+        const themeSelector = document.getElementById('themeSelector');
+        const wordCount = document.getElementById('wordCount');
+        const charCount = document.getElementById('charCount');
+        const saveStatus = document.getElementById('saveStatus');
+        const searchBox = document.getElementById('searchBox');
+        const notesList = document.getElementById('notesList');
+        const newNoteBtn = document.getElementById('newNoteBtn');
+        const linkModal = document.getElementById('linkModal');
+        const imageModal = document.getElementById('imageModal');
+
+        // Initialize CodeMirror
+        editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+            mode: 'markdown',
+            lineNumbers: true,
+            theme: 'default',
+            lineWrapping: true
+        });
+
+        editor.on('change', () => {
+            updatePreview();
+            updateCounts();
+            saveStatus.textContent = 'Unsaved changes';
+        });
+
+        function updatePreview() {
+            const content = editor.getValue();
+            const sanitizedContent = DOMPurify.sanitize(marked(content));
+            preview.innerHTML = sanitizedContent;
+        }
+
+        function updateCounts() {
+            const text = editor.getValue();
+            const words = text.trim().split(/\s+/).filter(word => word.length > 0).length;
+            const chars = text.length;
+            wordCount.textContent = `Words: ${words}`;
+            charCount.textContent = `Characters: ${chars}`;
+        }
+
+        function saveNote() {
+            if (!currentNote.id) {
+                currentNote.id = Date.now().toString();
+                currentNote.title = prompt('Enter a title for your note:') || 'Untitled';
+            }
+            currentNote.content = editor.getValue();
+            localStorage.setItem(currentNote.id, JSON.stringify(currentNote));
+            saveStatus.textContent = 'Saved';
+            updateNotesList();
+        }
+
+        function loadNote(id) {
+            const noteData = localStorage.getItem(id);
+            if (noteData) {
+                currentNote = JSON.parse(noteData);
+                editor.setValue(currentNote.content);
+                updatePreview();
+                updateCounts();
+                saveStatus.textContent = 'Loaded';
+            }
+        }
+
+        function updateNotesList() {
+            notesList.innerHTML = '';
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const noteData = JSON.parse(localStorage.getItem(key));
+                const noteItem = document.createElement('div');
+                noteItem.className = 'note-item';
+                noteItem.textContent = noteData.title;
+                noteItem.addEventListener('click', () => loadNote(key));
+                notesList.appendChild(noteItem);
+            }
+        }
+
+        function insertText(before, after = '') {
+            const doc = editor.getDoc();
+            const cursor = doc.getCursor();
+            const selection = doc.getSelection();
+            if (selection) {
+                doc.replaceSelection(before + selection + after);
+            } else {
+                doc.replaceRange(before + after, cursor);
+                doc.setCursor({line: cursor.line, ch: cursor.ch + before.length});
+            }
+            editor.focus();
+        }
+
+        saveBtn.addEventListener('click', saveNote);
+        boldBtn.addEventListener('click', () => insertText('**', '**'));
+        italicBtn.addEventListener('click', () => insertText('*', '*'));
+        codeBtn.addEventListener('click', () => insertText('`', '`'));
+        listBtn.addEventListener('click', () => insertText('- '));
+        quoteBtn.addEventListener('click', () => insertText('> '));
+        headingBtn.addEventListener('click', () => insertText('# '));
+        undoBtn.addEventListener('click', () => editor.undo());
+        redoBtn.addEventListener('click', () => editor.redo());
+
+        exportBtn.addEventListener('click', () => {
+            const blob = new Blob([editor.getValue()], {type: 'text/markdown'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentNote.title || 'Untitled'}.md`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        printBtn.addEventListener('click', () => {
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write('<html><head><title>Print</title>');
+            printWindow.document.write('<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css">');
+            printWindow.document.write('</head><body class="markdown-body">');
+            printWindow.document.write(preview.innerHTML);
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            printWindow.print();
+        });
+
+        themeSelector.addEventListener('change', (e) => {
+            editor.setOption('theme', e.target.value);
+        });
+
+        searchBox.addEventListener('input', () => {
+            const searchTerm = searchBox.value.toLowerCase();
+            const noteItems = notesList.getElementsByClassName('note-item');
+            for (let item of noteItems) {
+                if (item.textContent.toLowerCase().includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            }
+        });
+
+        newNoteBtn.addEventListener('click', () => {
+            currentNote = { id: null, title: '', content: '' };
+            editor.setValue('');
+            updatePreview();
+            updateCounts();
+            saveStatus.textContent = 'New note';
+        });
+
+        linkBtn.addEventListener('click', () => {
+            linkModal.style.display = 'block';
+        });
+
+        imageBtn.addEventListener('click', () => {
+            imageModal.style.display = 'block';
+        });
+
+        document.querySelectorAll('.close').forEach(closeBtn => {
+            closeBtn.addEventListener('click', () => {
+                linkModal.style.display = 'none';
+                imageModal.style.display = 'none';
+            });
+        });
+
+        document.getElementById('insertLinkBtn').addEventListener('click', () => {
+            const linkText = document.getElementById('linkText').value;
+            const linkUrl = document.getElementById('linkUrl').value;
+            insertText(`[${linkText}](${linkUrl})`);
+            linkModal.style.display = 'none';
+        });
+
+        document.getElementById('insertImageBtn').addEventListener('click', () => {
+            const imageAlt = document.getElementById('imageAlt').value;
+            const imageUrl = document.getElementById('imageUrl').value;
+            insertText(`![${imageAlt}](${imageUrl})`);
+            imageModal.style.display = 'none';
+        });
+
+        // Initialize
+        updateNotesList();
+        updatePreview();
+        updateCounts();
+    </script>
+</body>
+</html>
