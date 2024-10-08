@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,6 +69,7 @@
         #preview {
             padding: 20px;
             box-sizing: border-box;
+            display: none; /* Initially hidden */
         }
         .CodeMirror {
             height: 100% !important;
@@ -143,6 +145,7 @@
         <div class="main-content">
             <div class="toolbar">
                 <button id="saveBtn"><i class="fas fa-save"></i> Save</button>
+                <button id="clearBtn"><i class="fas fa-eraser"></i> Clear</button>
                 <button id="boldBtn"><i class="fas fa-bold"></i></button>
                 <button id="italicBtn"><i class="fas fa-italic"></i></button>
                 <button id="linkBtn"><i class="fas fa-link"></i></button>
@@ -198,6 +201,7 @@
         let currentNote = { id: null, title: '', content: '' };
         const preview = document.getElementById('preview');
         const saveBtn = document.getElementById('saveBtn');
+        const clearBtn = document.getElementById('clearBtn');
         const boldBtn = document.getElementById('boldBtn');
         const italicBtn = document.getElementById('italicBtn');
         const linkBtn = document.getElementById('linkBtn');
@@ -229,16 +233,13 @@
         });
 
         editor.on('change', () => {
-            updatePreview();
             updateCounts();
+            if (isCodeMode) {
+                preview.innerHTML = DOMPurify.sanitize(marked(editor.getValue())); // Show preview only in code mode
+                preview.style.display = 'block'; // Show preview
+            }
             saveStatus.textContent = 'Unsaved changes';
         });
-
-        function updatePreview() {
-            const content = editor.getValue();
-            const sanitizedContent = DOMPurify.sanitize(marked(content));
-            preview.innerHTML = sanitizedContent;
-        }
 
         function updateCounts() {
             const text = editor.getValue();
@@ -264,9 +265,10 @@
             if (noteData) {
                 currentNote = JSON.parse(noteData);
                 editor.setValue(currentNote.content);
-                updatePreview();
                 updateCounts();
                 saveStatus.textContent = 'Loaded';
+                preview.innerHTML = DOMPurify.sanitize(marked(currentNote.content)); // Show preview when loading
+                preview.style.display = 'block'; // Show preview
             }
         }
 
@@ -296,10 +298,32 @@
             editor.focus();
         }
 
+        // Event Listeners
+        newNoteBtn.addEventListener('click', () => {
+            currentNote = { id: null, title: '', content: '' };
+            editor.setValue('');
+            updateCounts();
+            saveStatus.textContent = 'New note';
+            preview.style.display = 'none'; // Hide preview for new note
+            setTimeout(() => editor.focus(), 100); // Open keyboard for input
+        });
+
+        clearBtn.addEventListener('click', () => {
+            editor.setValue(''); // Clear the editor
+            preview.innerHTML = ''; // Clear the preview
+            preview.style.display = 'none'; // Hide preview
+            updateCounts();
+            saveStatus.textContent = 'Cleared';
+        });
+
         saveBtn.addEventListener('click', saveNote);
         boldBtn.addEventListener('click', () => insertText('**', '**'));
         italicBtn.addEventListener('click', () => insertText('*', '*'));
-        codeBtn.addEventListener('click', () => insertText('`', '`'));
+        codeBtn.addEventListener('click', () => {
+            isCodeMode = true; // Set to code mode
+            preview.style.display = 'block'; // Show preview
+            editor.setOption('mode', 'markdown'); // Enable markdown mode
+        });
         listBtn.addEventListener('click', () => insertText('- '));
         quoteBtn.addEventListener('click', () => insertText('> '));
         headingBtn.addEventListener('click', () => insertText('# '));
@@ -335,20 +359,8 @@
             const searchTerm = searchBox.value.toLowerCase();
             const noteItems = notesList.getElementsByClassName('note-item');
             for (let item of noteItems) {
-                if (item.textContent.toLowerCase().includes(searchTerm)) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
+                item.style.display = item.textContent.toLowerCase().includes(searchTerm) ? 'block' : 'none';
             }
-        });
-
-        newNoteBtn.addEventListener('click', () => {
-            currentNote = { id: null, title: '', content: '' };
-            editor.setValue('');
-            updatePreview();
-            updateCounts();
-            saveStatus.textContent = 'New note';
         });
 
         linkBtn.addEventListener('click', () => {
@@ -382,7 +394,6 @@
 
         // Initialize
         updateNotesList();
-        updatePreview();
         updateCounts();
     </script>
 </body>
