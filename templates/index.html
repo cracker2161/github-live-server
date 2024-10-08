@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="jumbotron text-center">
+  <h1>Welcome to the IPTV Player</h1>
+  <p>Enter your M3U playlist URL to start watching</p>
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+  <form method="POST" action="/load_playlist">
+    <div class="form-group">
+      <input type="text" class="form-control" id="playlist_url" name="playlist_url" placeholder="Enter M3U Playlist URL"
+        required>
+    </div>
+    <button type="submit" class="btn btn-primary">Load Playlist</button>
+  </form>
+</div>
+{% endblock %}
