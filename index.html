@@ -1,0 +1,39 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Simple Project</title>
+    <link rel="stylesheet" href="style.css">
+    <style> 
+
+/* style.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    text-align: center;
+    padding: 20px;
+}
+
+   
+    </style>
+
+</head>
+<body>
+    <h1>Hello, World!</h1>
+    <button id="changeTextBtn">Click me to change text</button>
+    <p id="text">This is a simple project.</p>
+    
+    <script src="script.js"></script>
+
+<script>
+
+// script.js
+document.getElementById('changeTextBtn').addEventListener('click', function() {
+    document.getElementById('text').innerText = "You clicked the button!";
+});
+
+</script>
+</body>
+</html>
