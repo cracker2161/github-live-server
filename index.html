@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON-based IPTV Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #111;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #222;
+            padding: 10px;
+            text-align: center;
+        }
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }
+        .category {
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .category h2 {
+            background-color: #333;
+            padding: 10px;
+            text-align: center;
+            margin: 0;
+        }
+        .channels {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .channel {
+            width: 150px;
+            margin: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .channel img {
+            width: 100%;
+            border-radius: 10px;
+        }
+        .channel p {
+            margin: 5px 0;
+        }
+        video {
+            width: 80%;
+            height: auto;
+            margin: 20px auto;
+            display: block;
+            border: 2px solid #fff;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>JSON-based IPTV Player</h1>
+    </header>
+    <main>
+        <!-- Categories will load here dynamically -->
+    </main>
+    <video id="video-player" controls autoplay>
+        <source src="" type="application/x-mpegURL">
+        Your browser does not support the video tag.
+    </video>
+    <script src="app.js"></script>
+</body>
+</html>
